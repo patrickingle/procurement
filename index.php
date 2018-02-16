@@ -90,16 +90,25 @@ if (isset($_POST['submit'])) {
 		<input type='hidden' name='email_address' value='<?php echo $email_address;?>'>
 	<?php
 	if ($stmt2->num_rows > 0) {
-		$stmt2->bind_result($sol_num,$title,$duedate,$budget,$synopsis,$description,$filename,$onlinebid);
-		while ($stmt2->fetch_row())
+		//$stmt2->bind_result($sol_num,$title,$duedate,$budget,$synopsis,$description,$filename,$onlinebid);
+		echo '<table align="center" border="1">';
+		echo '<th></th><th>Solicitation #</th><th>Due Date</th><th>Title</th><th>Budget</th><th>Synopsis</th><th></th><th></th>';
+		while ($row = $stmt2->fetch_row())
 		{
+			echo '<tr>';
 			if ($validated == 'Y') {
-				echo "<input type='checkbox' name='sol[]' value='$row[0]'>";
+				echo "<td><input type='checkbox' name='sol[]' value='$row[1]'></td>";
+			} else {
+				echo "<td>&nbsp;</td>";
 			}
-			echo "<b>Sol #:</b> $row[0]  <b>Due:</b> $row[2] <b>Title:</b> $row[1]<br>";
-			echo "<b>Budget:</b> $row[3]<br>";
-			echo "<b>Synopsis:</b> $row[4]<br><br>";
+			echo "<td>$row[1]</td><td>$row[3]</td><td>$row[2]</td>";
+			echo "<td>$row[4]</td>";
+			echo "<td>$row[5]</td>";
+			echo '<td><form method="post" action="index.php"><input type="submit" name="ask" value="Q&A"></form></td>';
+			echo '<td><form method="post" action="index.php"><input type="submit" name="bid" value="Bid"></form></td>';
+			echo '</tr>';
 		}	
+		echo '</table>';
 	} else {
 		echo "<i>No Solicitations are available</i><br/><br/>";
 	}
@@ -109,7 +118,7 @@ if (isset($_POST['submit'])) {
 	} else {
 		echo "<input type='Submit' name='payfee' value='Validate'>";
 	}
-	echo "<input type='Submit' name='register' value='Register to Receive Solicitations'><br>";
+	echo "<input type='Submit' name='register' value='Register to Receive Solicitations'>";
 	echo "</form>";
 
 	echo "<h5>If no check box preceeds the Solicitation number, you must be validated.</h5></center>";
@@ -245,9 +254,8 @@ if (isset($_POST['submit'])) {
 	if ($row[0]) {
 		$sql = "SELECT * FROM solicitations WHERE duedate>'$today'";
 		$result = mysqli_query($mysqli, $sql) or die(mysqli_connect_error());
-				$num_of_rows = $result->num_rows;
-
-				$i = 0;
+		$num_of_rows = $result->num_rows;
+		$i = 0;
 
 		echo "<h1>The Results of Your Inquiry</h1>";
 		while ($row = $result->fetch_row())
@@ -259,14 +267,16 @@ if (isset($_POST['submit'])) {
 			$i++;
 		}
 
-		echo "<h1>Thank You!</h1>";
-		echo "Your Request has been send to: <b>$email_address</b>";
-		echo "<br><br>";
-		echo "<form method='post' action='index.php'><br>";
-		echo "<input type='Submit' name='browse' value='Browse Opportunities'>";
-		echo "<input type='Submit' name='ask' value='Questions & Answers'>";
-		echo "<input type='Submit' name='bid' value='Place Bid'><br>";
-		echo "</form>";
+		?>
+		<h1>Thank You!</h1>";
+		Your Request has been send to: <b><?php echo $email_address;?></b>
+		<br><br>
+		<form method='post' action='index.php'><br>
+			<input type='Submit' name='browse' value='Browse Opportunities'>
+			<input type='Submit' name='ask' value='Questions &amp; Answers'>
+			<input type='Submit' name='bid' value='Place Bid'><br>
+		</form>
+		<?php
 	} else {
 		?>
 		<h1>E-Mail Address not found. Please register</h1>
@@ -459,8 +469,8 @@ if (isset($_POST['submit'])) {
 	?>
 		</select><br><br>
 		<b>Registered E-Mail:</b> <input type='text' name='email_address' value='<?php echo $email_address; ?>' readonly><br><br>
-		<input type='Submit' name='display_qa' value='Proceed'>
-		<input type='Submit' name='register' value='Register to Receive Solicitations'>
+		<input type='submit' name='display_qa' value='Proceed'>
+		<input type='submit' name='register' value='Register to Receive Solicitations'>
 		</form>
 	</center>
 	<?php
@@ -475,13 +485,13 @@ if (isset($_POST['submit'])) {
 		<br><br>
 		<form method='post' action='index.php'><br>
 		<b>Solicitation Number:</b><select name='sol_num'>
-		<option value='Not Selected'>-Please Select-</option>
-	<?php
-	while ($row = $result->fetch_row())
-	{
-		echo "<option value='$row[0]'>$row[0]</option>";
-	}
-	?>
+			<option value='Not Selected'>-Please Select-</option>
+			<?php
+			while ($row = $result->fetch_row())
+			{
+				echo "<option value='$row[0]'>$row[0]</option>";
+			}
+			?>
 		</select><br><br>
 		<b>Registered E-Mail:</b> <input type='text' name='email_address' value='<?php echo $email_address; ?>' readonly><br><br>
 		<input type='Submit' name='placebid' value='Proceed'>
@@ -490,41 +500,55 @@ if (isset($_POST['submit'])) {
 	</center>
 	<?php
 } else if(isset($_POST['placebid'])) {
+	foreach($_POST as $key => $value) {
+		$$key = mysqli_real_escape_string($mysqli, $value);
+	}
 	$sql = "SELECT validated FROM vendor WHERE email='$email_address'";
 	$result = mysqli_query($mysqli, $sql) or die(mysqli_connect_error());
 	$row = $result->fetch_row();
 
 	$validated = $row[0];
 	if ($validated != 'Y') {
-		echo "<center>";
-		echo "<h2>Unable to accept bid. Please validate your account!</h2>";
-		echo "<form method='post' action='index.php'><br>";
-		echo "<input type='Submit' name='payfee' value='Validate Access'>";
-		echo "</form>";
-		echo "</center>";
+		?>
+		<center>
+			<h2>Unable to accept bid. Please validate your account!</h2>
+			<form method='post' action='index.php'><br>
+				<input type='Submit' name='payfee' value='Validate Access'>
+				<input type='submit' name='browser' value='Browse Current Opportunities'>
+			</form>
+		</center>
+		<?php
 	} else {
-		echo "<center>";
-		echo "<h2>Please place your bid!</h2>";
-		echo "<h5>Only one bid per registered user.</h5><br>";
-		echo "<form method='post' action='index.php'><br>";
-		echo "Solicitation No: $sol_num<br>";
-		echo "<input type='hidden' name='solnum' value='$sol_num'>";
-		echo "<input type='hidden' name='email_address' value='$email_address'>";
-		echo "Bid Amount: <input type='text' name='bidamount' vale=''><br>";
-		echo "Comments: ";
-		echo "<textarea type='text' name='$bidcomments' rows='5' cols='60' value='$bidcomments'></textarea><br>";
-		echo "<input type='Submit' name='bidexec' value='Submit Bid'>";
-		echo "</form>";
-		echo "</center>";
+		?>
+		<center>";
+			<h2>Please place your bid!</h2>
+			<h5>Only one bid per registered user.</h5><br>
+			<form enctype="multipart/form-data" method='post' action='index.php'><br>
+				<input type="hidden" name="MAX_FILE_SIZE" value="30000" />
+				Solicitation No: <?php echo $sol_num;?><br>
+				<input type='hidden' name='solnum' value='<?php echo $sol_num; ?>'>
+				<input type='hidden' name='email_address' value='<?php echo $email_address;?>'>
+				Bid Amount: <input type='text' name='bidamount' value=''><br>
+				Comments: 
+				<textarea type='text' name='bidcomments' rows='5' cols='60' value=''></textarea><br>
+				<input type="file" name="vendordoc" /><br/>
+				<input type='Submit' name='bidexec' value='Submit Bid'>
+				<input type='submit' name='browser' value='Browse Current Opportunities'>
+			</form>
+		</center>
+		<?php
 	}
 } else if (isset($_POST['bidexec'])) {
 	foreach($_POST as $key => $value) {
 		$$key = mysqli_real_escape_string($mysqli, $value);
 	}
+	
 	$sql = "SELECT * FROM bids WHERE email='$email_address' AND solnum='$solnum'";
 	$result = mysqli_query($mysqli, $sql) or die(mysqli_connect_error());
+	//echo '<pre>'; print_r($result->num_rows); echo '</pre>';
+	$user_bids = intval($result->num_rows);
 
-	if ($result->num_rows > 0) {
+	if ($user_bids == 0) {
 		$row = $result->fetch_row();
 		if ($row[2] == $email_address) {
 			?>
@@ -535,10 +559,22 @@ if (isset($_POST['submit'])) {
 			</center>
 			<?php
 		} else {
-			$sql = "INSERT INTO bids (solnum, email, amount, comments) VALUES ('$solnum','$email_address','$bidamount','$bidcomments')";
+			//echo '<pre>'; print_r($_FILES); echo '</pre>'; exit;
+			$vendordoc = $_FILES['vendordoc']['name'];
+			$saved_file = 'response_'.$solnum.'_'.$vendordoc;
+			$sql = "INSERT INTO bids (solnum, email, amount, comments, filename) VALUES ('$solnum','$email_address','$bidamount','$bidcomments','$saved_file')";
 			$result = mysqli_query($mysqli, $sql) or die(mysqli_connect_error());
+			$uploaddir = dirname(__FILE__).'/uploads/';
+			$uploadfile = $uploaddir . $saved_file;
+
+			echo '<center>';
+			if (move_uploaded_file($_FILES['vendordoc']['tmp_name'], $uploadfile)) {
+				echo "<h2>Your bid submitted successfully for Solicitation <?php echo $solnum;?>!</h2><br/>";
+			} else {
+				echo "Possible file upload attack!<br/>";
+			}
+					
 			?>
-			<center><h2>Your bid submitted successfully for Solicitation $solnum!</h2>
 				<form method='post' action='index.php'><br>
 				<input type='submit' name='returntomain' value='Return to Main'><br>
 				</form>
@@ -546,43 +582,43 @@ if (isset($_POST['submit'])) {
 			<?php
 		}	
 	} else {
+		echo '<center><b style="color:red;">You have already submitted a bid for this solicitation</b></center>';
 	}
 } else if (isset($_POST['display_qa'])) {
 	$sql = "SELECT fee FROM vendor WHERE email='$email_address'";
+	//echo $sql;
 	$result = mysqli_query($mysqli, $sql) or die(mysqli_connect_error());
 
 	$row = $result->fetch_row();
+	$fee = $row[0];
 	echo "<center>";
 	echo "<h1>Questions & Answers</h1>";
 
-	if ($row[0]) {
+	if ($fee > 0) {
 		$sol_num = $_POST['sol_num'];
 		$sql = "SELECT * FROM questions WHERE solnum='$sol_num'";
 		$result = mysqli_query($mysqli, $sql) or die(mysqli_connect_error());
+		echo "<h2>Solicitation # $sol_num</h2>";
 		if ($result->num_rows > 0) {
-			echo "<h2>Solicitation # $sol_num</h2>";
-
 			while ($row = $result->fetch_row())
 			{
 				echo "<b>Question:</b><br>";
-				echo "<blockquote>$row[1]</blockquote>";
+				echo "<blockquote>$row[2]</blockquote>";
 				echo "<b>Answer:</b><br>";
-				echo "<blockquote>$row[2]</blockquote><br>";
+				echo "<blockquote>$row[3]</blockquote><br>";
 			}
-
-			echo "<form method='post' action='index.php'><br>";
-			echo "<input type='Submit' name='browse' value='Browse Opportunities'>";
-			echo "<input type='Submit' name='post' value='Post Question'><br><br>";
-			echo "<input type='hidden' name='email_address' value='$email_address'>";
-			echo "<input type='hidden' name='sol_num' value='$sol_num'>";
-			echo "<textarea type='text' name='question' rows='5' cols='60' value=''></textarea><br>";
-			echo "</form>";
-		} else {
-			echo "<i>Please select a solicitation</i>";
-			echo "<form method='post' action='index.php'><br>";
-			echo "<input type='submit' name='returntomain' value='Return to Main'><br>";
-			echo "</form>";
 		}
+		echo "<form method='post' action='index.php'><br>";
+		echo "<textarea type='text' name='question' rows='5' cols='60' value=''></textarea><br>";
+		echo "<input type='submit' name='browse' value='Browse Opportunities'>";
+		echo "<input type='submit' name='post' value='Post Question'><br><br>";
+		echo "<input type='hidden' name='email_address' value='$email_address'>";
+		echo "<input type='hidden' name='sol_num' value='$sol_num'>";
+		echo "</form>";
+		//echo "<i>Please select a solicitation</i>";
+		//echo "<form method='post' action='index.php'><br>";
+		//echo "<input type='submit' name='returntomain' value='Return to Main'><br>";
+		//echo "</form>";
 	} else {
 		echo "<h1>E-Mail Address not found. Please register</h1>";
 		echo "<form method='post' action='index.php'><br>";
@@ -591,6 +627,9 @@ if (isset($_POST['submit'])) {
 	}
 	echo "</center>";
 } else if(isset($_POST['post'])) {
+	foreach($_POST as $key => $value) {
+		$$key = mysqli_real_escape_string($mysqli, $value);
+	}
 	$sql = "INSERT INTO questions (solnum,question,email) VALUES ('$sol_num','$question','$email_address')";
 	$result = mysqli_query($mysqli, $sql) or die(mysqli_connect_error());
 
@@ -599,15 +638,14 @@ if (isset($_POST['submit'])) {
 	$row = $result->fetch_row();
 	$fee = $row[0];
 
-	if ($fee) {
+	echo "<center>";
+	if ($fee > 0) {
 		$sql = "SELECT * FROM questions WHERE solnum='$sol_num'";
 		$result = mysqli_query($mysqli, $sql) or die(mysqli_connect_error());
 
 		?>
-		<center>";
 		<h1>Questions &amp; Answers</h1>
 		<h2>Solicitation # <?php echo $sol_num; ?></h2>
-		</center>
 		<?php
 		while ($row = $result->fetch_row())
 		{
@@ -620,11 +658,11 @@ if (isset($_POST['submit'])) {
 		}
 		?>
 		<form method='post' action='index.php'><br>
-			<input type='Submit' name='browse' value='Browse Opportunities'>
-			<input type='Submit' name='post' value='Post Question'><br><br>
+			<textarea type='text' name='question' rows='5' cols='60' value=''></textarea><br>
+			<input type='submit' name='browse' value='Browse Opportunities'>
+			<input type='submit' name='post' value='Post Question'><br><br>
 			<input type='hidden' name='email_address' value='<?php echo $email;?>'>
 			<input type='hidden' name='sol_num' value='<?php echo $sol_num;?>'>
-			<textarea type='text' name='question' rows='5' cols='60' value=''></textarea><br>
 		</form>
 		<?php
 	} else {
@@ -635,6 +673,7 @@ if (isset($_POST['submit'])) {
 		</form>
 		<?php
 	}
+	echo "</center>";
 } else {
 	?>
 	<center>
