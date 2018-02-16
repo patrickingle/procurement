@@ -93,7 +93,7 @@ CREATE TABLE bids (
    email varchar(50) NOT NULL,
    amount decimal(10,0) DEFAULT '0' NOT NULL,
    comments longtext NOT NULL,
-   bidtime timestamp(14),
+   bidtime timestamp(6),
    PRIMARY KEY (seq)
 );
 
