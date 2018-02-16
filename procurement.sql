@@ -3,14 +3,13 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 16, 2018 at 01:02 PM
+-- Generation Time: Feb 16, 2018 at 06:47 PM
 -- Server version: 10.1.30-MariaDB
 -- PHP Version: 7.2.1
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
 START TRANSACTION;
-SET time_zone = "+00:00";
 
 --
 -- Database: `procurement`
@@ -26,11 +25,12 @@ USE `procurement`;
 
 CREATE TABLE IF NOT EXISTS `bids` (
   `seq` tinyint(4) NOT NULL AUTO_INCREMENT,
-  `solnum` varchar(13) NOT NULL DEFAULT '0',
-  `email` varchar(50) NOT NULL,
+  `solnum` varchar(255) NOT NULL DEFAULT '0',
+  `email` varchar(255) NOT NULL,
   `amount` decimal(10,0) NOT NULL DEFAULT '0',
   `comments` longtext NOT NULL,
   `bidtime` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  `filename` varchar(255) NOT NULL,
   PRIMARY KEY (`seq`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS `echeck` (
 
 CREATE TABLE IF NOT EXISTS `questions` (
   `seq` tinyint(4) NOT NULL AUTO_INCREMENT,
-  `solnum` varchar(13) NOT NULL,
+  `solnum` varchar(255) NOT NULL,
   `question` longtext NOT NULL,
   `answer` longtext NOT NULL,
   `email` varchar(50) NOT NULL,
@@ -73,8 +73,8 @@ CREATE TABLE IF NOT EXISTS `questions` (
 
 CREATE TABLE IF NOT EXISTS `solicitations` (
   `seq` int(11) NOT NULL AUTO_INCREMENT,
-  `number` varchar(13) NOT NULL,
-  `title` varchar(80) NOT NULL,
+  `number` varchar(255) NOT NULL,
+  `title` varchar(255) NOT NULL,
   `duedate` date NOT NULL DEFAULT '0000-00-00',
   `budget` decimal(15,2) NOT NULL DEFAULT '0.00',
   `synopsis` longtext NOT NULL,
